@@ -1,0 +1,375 @@
+---
+title: "BellaBeat_Analysis"
+author: "Praveen Choragudi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+## Table of Contents
+
+* Introduction
+* Ask phase
+* Prepare phase
+* Process phase
+* Analyze phase
+* Share Phase
+* Act Phase
+* Conclusion
+
+## Introduction
+
+ Bellabeat is a high-tech producer of goods with an emphasis on tracking and enhancing women's health. They are a prosperous small business with the potential to dominate the global market for smart devices. As a junior data analyst for Bellabeat's marketing analyst team, I will be examining some fitness data from smart devices that could open up new business options for the organisation.
+ 
+### Characters and products
+
+#### Characters
+
+* Urška Sršen: Bellabeat’s cofounder and Chief Creative Officer
+* Sando Mur: Mathematician and Bellabeat’s cofounder; key member of the Bellabeat executive team.
+
+* Bellabeat marketing analytics team: A team of data analysts responsible for collecting, analyzing, and reporting data that helps guide Bellabeat’s marketing strategy. You joined this team six months ago and have been busy learning about Bellabeat’’s mission and business goals — as well as how you, as a junior data analyst, can help Bellabeat achieve them.
+
+#### Products
+
+* Bellabeat app: The Bellabeat app provides users with health data related to their activity, sleep, stress, menstrual cycle, and mindfulness habits. This data can help users better understand their current habits and make healthy decisions. The Bellabeat app connects to their line of smart wellness products.
+
+* Leaf: Bellabeat’s classic wellness tracker can be worn as a bracelet, necklace, or clip. The Leaf tracker connects to the Bellabeat app to track activity, sleep, and stress.
+
+* Time: This wellness watch combines the timeless look of a classic timepiece with smart technology to track user activity, sleep, and stress. The Time watch connects to the Bellabeat app to provide you with insights into your daily wellness.
+
+* Spring: This is a water bottle that tracks daily water intake using smart technology to ensure that you are appropriately hydrated throughout the day. The Spring bottle connects to the Bellabeat app to track your hydration levels.
+
+#### Installing and loading common packages and libraries
+
+ We install and load packages along the way as we may discover we need different packages after we start our analysis. If you already have some of these packages installed and loaded, you can skip those ones - or you can choose to run those specific lines of code anyway. It may take a few moments to run.
+ 
+## Ask phase
+Questions guiding the analysis
+
+* What are some trends in the smart device usage?
+* How could these trends apply to bellabeat customers
+* How could these trends help influence Bellabeat marketing strategy?
+
+### Business Task
+
+Analyze fitness data from smart devices to spot patterns in consumer usage, then make suggestions on how these patterns can influence Bellabeat's marketing strategy.
+
+## Prepare phase
+
+ This dataset was created by participants in a distributed survey who used Amazon Mechanical Turk between December 3, 2016, and December 5, 2016. Thirty eligible Fitbit users agreed to submit their personal tracker data, which included minute-level output for heart rate, sleep, and physical activity monitoring. 
+
+ Reports can be analysed individually using the export session ID (column A) or timestamp (column B). The difference in output reflects the use of various Fitbit tracker models and personal monitoring habits and preferences.
+
+### Data Organization
+
+There are 18 CSV files in the structured dataset. It is set up in a long data format, which means that none of the values in the first column repeat.
+
+### Data Credibility/Limitations
+
+ Since the statistics were obtained from a third party, it is difficult to confirm their accuracy. Additionally, important participant demographics were left out, making it impossible to determine whether or not the data is representative of the population. Only current Fitbit users are represented in the data, which could lead to sample bias. 
+ Due to only 33 people reporting their data, the sample size is extremely tiny. Since the previous update was made two years ago, the data is no longer accurate. I will however continue to examine the dataset to find trends in the users' everyday usage.
+
+### Data liscensing/privacy
+
+ Our dataset's metadata includes information about licencing and privacy. Open-source data with a CCO:public domain licence. The general public has access to it and can use and reuse it.
+
+```{r}
+# Using the install.packages() function to install packages
+
+install.packages("tidyverse")        # collection of R packages designed for data science
+install.packages("dplyr")            # for transforming data sets
+install.packages("janitor")          # for examining and cleaning dirty data
+install.packages("lubridate")        # for date & time formats
+install.packages("ggpubr")           # for creating and customizing ggplot2
+install.packages("waffle")           # for waffle charts
+install.packages("scales")           # scaling used by ggplots
+install.packages("RColorBrewer")     # for color palette
+```
+
+```{r}
+# Using the library () function to load packages
+
+library(tidyverse)          # collection of R packages designed for data science
+library(dplyr)              # for transforming data sets
+library(janitor)            # for examining and cleaning dirty data
+library(lubridate)          # for date & time formats
+library(ggpubr)             # for creating and customizing ggplot2
+library(waffle)             # for waffle charts
+library(scales)             # scaling used by ggplots
+library(RColorBrewer)       # for color palette
+
+# Reading csv files
+
+activity_daily <- read_csv(file= "/cloud/project/bellabeat/Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv") 
+calories_daily <- read_csv(file= "/cloud/project/bellabeat/Fitabase Data 4.12.16-5.12.16/dailyCalories_merged.csv") 
+intensities_daily <- read_csv(file= "/cloud/project/bellabeat/Fitabase Data 4.12.16-5.12.16/dailyIntensities_merged.csv")
+steps_daily <- read_csv(file= "/cloud/project/bellabeat/Fitabase Data 4.12.16-5.12.16/dailySteps_merged.csv")
+steps_hourly <- read_csv(file= "/cloud/project/bellabeat/Fitabase Data 4.12.16-5.12.16/hourlySteps_merged.csv")
+sleep_daily <- read_csv(file= "/cloud/project/bellabeat/Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
+weight <- read_csv(file= "/cloud/project/bellabeat/Fitabase Data 4.12.16-5.12.16/weightLogInfo_merged.csv")
+
+# Using the head() function to get a snapshot of each data set.
+
+head(activity_daily)
+head(calories_daily)
+head(intensities_daily)
+head(steps_daily)
+head(steps_hourly)
+head(sleep_daily)
+head(weight)
+
+# Using the str() function to preview  the structure of each data set.
+
+str(activity_daily)
+str(calories_daily) 
+str(intensities_daily) 
+str(steps_daily) 
+str(steps_hourly) 
+str(sleep_daily) 
+str(weight)
+
+# To verify that the datasets calories_daily, intensities_daily, and steps_daily are subsets found in activity_daily, we will use all() funtion
+
+all(calories_daily %in% activity_daily)
+all(intensities_daily %in% activity_daily)
+all(steps_daily %in% activity_daily)
+
+# Using the rm() function to remove the data sets that are subsets of the activity_daily data set.
+
+rm(calories_daily,intensities_daily,steps_daily)
+
+# Changing the the column names
+
+colnames(activity_daily) <- c("id","date","steps","distance","tracker_distance","logged_distance","active_distance","moderate_distance",
+                              "light_distance","sedentary_distance","active_min","fair_min","light_min",
+                              "sedentary_min","calories")
+
+colnames(sleep_daily) <- c("id","date","sleep_records","minutes_asleep","time_in_bed")
+
+colnames(steps_hourly) <- c("id","date","steps")
+
+```
+## Process phase
+
+ In this phase, I'll make sure my data is accurate by cleaning it up, which includes date formatting, looking for duplicates, ensuring that column names are consistent, looking for missing data, etc. My data will be prepared and perfectly suited to the business task thanks to this. 
+
+ I'll be utilising the programming language R throughout for all of my data cleaning, analysis, and visualisation because I enjoyed studying it and I want to put it to use and show forth my skills.
+ 
+```{r}
+# Cleaning the the column names
+
+clean_names(activity_daily)
+
+clean_names(sleep_daily)
+
+clean_names(steps_hourly)
+
+# Using the colnames() to view the names of all the columns found in each data set
+
+colnames(activity_daily)
+colnames(sleep_daily)
+colnames(steps_hourly)
+
+# Using the sum() function to view the number of duplicates in each data set
+
+sum(duplicated(activity_daily))
+sum(duplicated(sleep_daily))
+sum(duplicated(steps_hourly))
+
+# Using the unique function return only unique 
+sleep_daily <- unique(sleep_daily)
+
+# Using the sum() function to view the number of duplicates in the sleep_daily data set 
+
+sum(duplicated(sleep_daily))
+
+# Double checking the data structure
+
+head(activity_daily)
+head(sleep_daily)
+head(steps_hourly)
+```
+## Analysis phase
+
+I will not be using the sleep_day and daily_intensities for analysis because while exploring the datasets, i noticed that the daily_activity table contains the consolidated information from both tables.
+
+### Summary statistics:
+Analyzing summary statistics from daily_activity and sleep_day tables
+
+```{r}
+# Using the mutate() function to change the data type of the date column from chr to date
+
+activity_daily <- activity_daily %>% 
+  mutate(date= as_date(date, format= "%m/%d/%Y"))
+
+sleep_daily <- sleep_daily %>%
+  mutate(date= as.POSIXct(date, format= "%m/%d/%Y  %I:%M:%S %p", tz= Sys.timezone()))
+
+steps_hourly <- steps_hourly %>% 
+  mutate(date= as.POSIXct(date, format="%m/%d/%Y %I:%M:%S %p", tz= Sys.timezone()))
+
+
+# Verifying the date column format changes
+head(activity_daily)
+head(sleep_daily)
+head(steps_hourly)
+
+# Using the merge() function to combine the two data sets 
+
+activity_merged <- merge(activity_daily, sleep_daily, by= c("id","date"), all.x = TRUE)
+
+
+# Verifying the merge
+head(activity_merged)
+
+# summary activity_merged data:
+
+summary(activity_merged)
+
+```
+## Share phase
+
+```{r}
+# Setting up custom themes for ggplot2
+
+custom_theme <- function() {
+  theme(
+    panel.border = element_rect(colour = "black", 
+                                fill = NA, 
+                                linetype = 1),
+    panel.background = element_rect(fill = "white", 
+                                    color = 'grey50'),
+    panel.grid.minor.y = element_blank(),
+    axis.text = element_text(colour = "black", 
+                             face = "italic", 
+                             family = "Helvetica"),
+    axis.title = element_text(colour = "black", 
+                              family = "Helvetica"),
+    axis.ticks = element_line(colour = "black"),
+    plot.title = element_text(size=23, 
+                              hjust = 0.5, 
+                              family = "Helvetica"),
+    plot.subtitle=element_text(size=16, 
+                               hjust = 0.5),
+    plot.caption = element_text(colour = "black", 
+                                face = "italic", 
+                                family = "Helvetica")
+  )
+}
+
+
+# Correlation between calories and steps
+
+activity_merged %>% 
+  group_by(steps, calories) %>% 
+  ggplot(aes(x = steps, y = calories, color = calories)) +
+  geom_point() +
+  geom_smooth(formula = y ~ x, method = "lm")+
+  custom_theme() +
+  theme(legend.position = c(.8, .3),
+        legend.spacing.y = unit(1, "mm"), 
+        panel.border = element_rect(colour = "black", fill=NA),
+        legend.background = element_blank(),
+        legend.box.background = element_rect(colour = "black")) +
+  labs(title = 'Calories burned by total steps taken',
+       y = 'Calories',
+       x = 'Total Steps',
+       caption = 'Data Source: FitBit Fitness Tracker Data')
+
+
+# Analyzing user weekly activity and steps 
+
+activity_merged %>% 
+  mutate(weekdays = weekdays(date)) %>% 
+  select(weekdays, steps) %>% 
+  mutate(weekdays = factor(weekdays, levels = c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))) %>% 
+  drop_na() %>% 
+  ggplot(aes(weekdays, steps, fill = weekdays)) +
+  geom_boxplot() +
+  custom_theme() +
+  scale_fill_brewer(palette="Pastel1") +
+  theme(legend.position="none") +
+  labs(
+    title = "Weekly user activity",
+    x = "Day", line,
+    y = "Steps",
+    caption = 'Data Source: FitBit Fitness Tracker Data 2016'
+  )
+
+# Establishing user nightly sleep cycle by minutes
+
+activity_merged %>% 
+  select(minutes_asleep) %>% 
+  drop_na() %>% 
+  mutate(sleep_quality = ifelse(minutes_asleep <= 420, 'Less than 7h',
+                                ifelse(minutes_asleep <= 540, '7h to 9h', 
+                                       'More than 9h'))) %>%
+  mutate(sleep_quality = factor(sleep_quality, 
+                                levels = c('Less than 7h','7h to 9h',
+                                           'More than 9h'))) %>% 
+  ggplot(aes(x = minutes_asleep, fill = sleep_quality)) +
+  geom_histogram(position = 'dodge', bins = 30) +
+  custom_theme() +
+  scale_fill_manual(values=c("grey", "#80c7d5", "lightcoral")) +
+  theme(legend.position = c(.80, .80),
+        legend.title = element_blank(),
+        legend.spacing.y = unit(0, "mm"), 
+        panel.border = element_rect(colour = "black", fill=NA),
+        legend.background = element_blank(),
+        legend.box.background = element_rect(colour = "black")) +
+  labs(
+    title = "Sleep distribution",
+    x = "Time slept (minutes)",
+    y = "Count",
+    caption = 'Data Source: FitBit Fitness Tracker Data'
+  )
+
+# Separating the  date and time column in steps_hourly data set
+
+steps_hourly <- steps_hourly %>% 
+  separate(date, into= c("date", "time"), sep = " ") %>% 
+  mutate(date= ymd (date))
+
+head(steps_hourly)
+
+# Adding a weekday column to the data set
+
+steps_weekday <- (steps_hourly)%>%
+  mutate(weekday= weekdays(date))%>%
+  group_by (weekday,time) %>% 
+  summarize(average_steps= mean(steps), .groups = 'drop')
+
+steps_weekday$weekday <- ordered(steps_weekday$weekday, 
+                                 levels=c("Monday", "Tuesday", "Wednesday","Thursday","Friday", "Saturday", "Sunday"))
+
+head(steps_weekday)
+
+# Creating a heatmap to better visualize the volume and time of activity within a weekday
+
+ggplot(steps_weekday, aes(x= time, y= weekday, 
+                          fill= average_steps)) +
+  theme(axis.text.x= element_text(angle = 90))+
+  labs(title= "Active Time During the Week", 
+       x=" ", y=" ",fill = "average\nsteps",
+       caption= 'Data Source: Fitabase Data 2016')+
+  scale_fill_gradient(low= "white", high="blue")+
+  geom_tile(color= "white",lwd =.6,linetype =1)+
+  coord_fixed()+
+  theme(plot.title= element_text(hjust= 0.5,vjust= 0.8, size=16),
+        panel.background= element_blank())
+```
+
+## Act Phase
+
+#### Recommendations: 
+
+* Sleep Journal: The Bellabeat app may offer a customised sleep journal for each user in addition to the health information it offers. The user will be able to see trends and alter their behaviour to improve their sleep if they use this notebook to track their sleep for a certain period of time. 
+
+* Client segmentation Being in the healthcare industry, Bellabeat Company understands the value of "understanding your consumer." Bellabeat Company may take advantage of the growing need in the healthcare sector for individualised treatment and value-based care. It would be wonderful to include essential consumer demographic information like age and occupation!
+
+* Customized notifications and alarms: Bellabeat can use the app's notifications and alarms to remind users to go to bed or exercise. Additionally, this needs to be tailored. 
+
+* Periodic report: Users can receive thorough evaluations of their weekly performance, which will both inspire them and help them identify their strongest points for development.
+
+## Conclusion
+
+ Bellabeat Firm understands the value of data collecting and analysis in enhancing business choices. Bellabeat Company is a high-tech company with significant potential to become a worldwide smart device market. In this case study, I used fitbit data to learn how Bellabeat customers interact with non-Bellabeat products, spot some usage patterns for smart devices, analyse how Bellabeat customers might be affected by these patterns, and then offer suggestions that could have an impact on Bellabeat's marketing strategy.
